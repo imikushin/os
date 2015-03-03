@@ -57,8 +57,51 @@ If you are running from the ISO RancherOS will be running from memory.  In order
 
 ## Installing to Disk/Upgrading
 
-Coming soon (but you can guess it's all based on Docker)
+Beta:
 
+To install RancherOS on a new disk you can now use the `rancheros-install` command. 
+
+For non-ec2 installs, before getting started create a cloud-init file that will provide your initial ssh keys. At a minimum something like:
+
+```
+ #cloud-config
+ ssh_authorized_keys:
+  - ssh-rsa AAA... darren@rancher
+```
+
+See section below for current supported cloud-init functionality.
+
+The command arguments are as follows:
+
+```
+Usage:
+  rancheros-install [options]
+Options:
+  -c cloud-config file
+      needed for SSH keys.
+  -d device
+  -f [ DANGEROUS! Data loss can happen ] partition/format without prompting
+  -p partition disk.
+        This will run fdisk and create one large ext4 partition.
+  -t install-type:
+        virtualbox-iso
+        amazon-ebs
+        rancher-upgrade
+  -v os-installer version.
+  -h print this
+ ```
+ 
+ This command orchestrates installation from the rancher/os-installer. 
+ 
+####Examples:
+ Virtualbox installation:
+ 
+ `sudo rancheros-install -d /dev/sda -c ./cloud_data.yml -v v0.1.1 -t virtualbox-iso`
+ 
+ Upgrading:
+ 
+ `sudo rancheros-install -d <device> -v v0.2.0 -t rancher-upgrade`
+ 
 ## Configuring
 
 The entire state of RancherOS is controlled by a single configuration document.
