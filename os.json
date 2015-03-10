@@ -1,0 +1,18 @@
+{
+  "builders": [{
+    "type": "virtualbox-ovf",
+    "name": "RancherOS-v0.1.2",
+    "vm_name": "RancherOS-v0.1.2",
+    "source_path": "dist/artifacts/RancherOS-62b5649.ova",
+    "boot_wait": "20s",
+    "guest_additions_mode": "disable",
+    "ssh_username": "rancher",
+    "ssh_key_path": "vagrant-key.pem",
+    "ssh_wait_timeout": "30s",
+    "shutdown_command": "sudo poweroff"
+  }],
+  "post-processors": [{
+    "type": "vagrant",
+    "compression_level": 9
+  }]
+}

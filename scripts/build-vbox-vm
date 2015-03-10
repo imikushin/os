@@ -44,4 +44,7 @@ VBoxManage modifyvm $VM --nic2 hostonly
 VBoxManage modifyvm $VM --nictype2 virtio
 VBoxManage modifyvm $VM --hostonlyadapter2 ${vboxnet}
 
+## TODO export VM to OVF (./dist/artifacts/${VM}.ova) file
+## TODO use packer build to produce vagrant box
+
 #VBoxManage startvm $VM
