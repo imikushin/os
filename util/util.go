@@ -260,7 +260,7 @@ func GetServices(urls []string) ([]string, error) {
 
 	for _, url := range urls {
 		indexUrl := fmt.Sprintf("%s/index.yml", url)
-		content, err := LoadResource(indexUrl, true, []string{})
+		content, err := LoadResource(indexUrl, []string{})
 		if err != nil {
 			log.Errorf("Failed to load %s: %v", indexUrl, err)
 			continue
@@ -281,14 +281,11 @@ func GetServices(urls []string) ([]string, error) {
 	return result, nil
 }
 
-func LoadResource(location string, network bool, urls []string) ([]byte, error) {
+func LoadResource(location string, urls []string) ([]byte, error) {
 	var bytes []byte
 	err := ErrNotFound
 
 	if strings.HasPrefix(location, "http:/") || strings.HasPrefix(location, "https:/") {
-		if !network {
-			return nil, ErrNoNetwork
-		}
 		resp, err := http.Get(location)
 		if err != nil {
 			return nil, err
@@ -303,7 +300,7 @@ func LoadResource(location string, network bool, urls []string) ([]byte, error) 
 	} else if len(location) > 0 {
 		for _, url := range urls {
 			ymlUrl := fmt.Sprintf("%s/%s/%s.yml", url, location[0:1], location)
-			bytes, err = LoadResource(ymlUrl, network, []string{})
+			bytes, err = LoadResource(ymlUrl, []string{})
 			if err == nil {
 				log.Debugf("Loaded %s from %s", location, ymlUrl)
 				return bytes, nil

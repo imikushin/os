@@ -116,19 +116,19 @@ func newCoreServiceProject(cfg *config.CloudConfig) (*project.Project, error) {
 				continue
 			}
 
-			bytes, err := LoadServiceResource(service, network, cfg)
-			if err != nil {
-				if err == util.ErrNoNetwork {
-					log.Debugf("Can not load %s, networking not enabled", service)
-				} else {
-					log.Errorf("Failed to load %s : %v", service, err)
-				}
+			if !network {
+				log.WithFields(log.Fields{"service": service}).Debug("Not loading (yet): networking not enabled")
 				continue
 			}
 
-			err = p.Load(bytes)
+			bytes, err := LoadServiceResource(service, cfg)
 			if err != nil {
-				log.Errorf("Failed to load %s : %v", service, err)
+				log.WithFields(log.Fields{"service": service, "err": err}).Error("Failed to load resource")
+				continue
+			}
+
+			if err := p.Load(bytes); err != nil {
+				log.WithFields(log.Fields{"service": service, "err": err}).Error("Failed to load")
 				continue
 			}
 
@@ -148,8 +148,7 @@ func newCoreServiceProject(cfg *config.CloudConfig) (*project.Project, error) {
 		}
 	}()
 
-	err = p.ReloadCallback()
-	if err != nil {
+	if err := p.ReloadCallback(); err != nil {
 		log.Errorf("Failed to reload os: %v", err)
 		return nil, err
 	}
@@ -157,6 +156,6 @@ func newCoreServiceProject(cfg *config.CloudConfig) (*project.Project, error) {
 	return p, nil
 }
 
-func LoadServiceResource(name string, network bool, cfg *config.CloudConfig) ([]byte, error) {
-	return util.LoadResource(name, network, cfg.Rancher.Repositories.ToArray())
+func LoadServiceResource(name string, cfg *config.CloudConfig) ([]byte, error) {
+	return util.LoadResource(name, cfg.Rancher.Repositories.ToArray())
 }

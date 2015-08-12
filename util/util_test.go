@@ -15,7 +15,7 @@ func TestLoadResourceSimple(t *testing.T) {
 `
 	expected = strings.TrimSpace(expected)
 
-	b, e := LoadResource("https://raw.githubusercontent.com/rancherio/os-services/v0.3.4/index.yml", true, []string{})
+	b, e := LoadResource("https://raw.githubusercontent.com/rancherio/os-services/v0.3.4/index.yml", []string{})
 
 	assert.Nil(e)
 	assert.Equal(expected, strings.TrimSpace(string(b)))
