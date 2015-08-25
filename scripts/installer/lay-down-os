@@ -65,36 +65,34 @@ mount_device()
 create_boot_dirs()
 {
     mkdir -p ${BASE_DIR}/boot/grub
+    mkdir -p ${BASE_DIR}/boot/extlinux
 }
 
-install_grub() {
-    grub-install --boot-directory=${BASE_DIR}/boot ${DEVICE}
+install_extlinux() {
+    extlinux -i ${BASE_DIR}/boot/extlinux
+    dd if=/usr/share/syslinux/mbr.bin of=${DEVICE}
 }
 
-grub2_config(){
-    local grub_cfg=${BASE_DIR}/boot/grub/grub.cfg
+extlinux_config(){
+    local extlinux_conf=${BASE_DIR}/boot/extlinux/extlinux.conf
     local append_line="${1}"
-cat >${grub_cfg} <<EOF
-set default="0"
-set timeout="1"
-#set fallback=1
-
-menuentry "RancherOS-current" {
-  set root=(hd0,msdos1)
-  linux /boot/vmlinuz-${VERSION}-rancheros ${append_line} console=${CONSOLE}
-  initrd /boot/initrd-${VERSION}-rancheros
-}
+cat >${extlinux_conf} <<EOF
+default ros
+label ros
+    kernel /boot/vmlinuz-${VERSION}-rancheros
+    initrd /boot/initrd-${VERSION}-rancheros
+    append ${append_line} console=${CONSOLE}
 
 EOF
 
 if [ ! -z ${ROLLBACK_VERSION} ]; then
-    sed -i 's/^#set/set/' ${grub_cfg}
-cat >>${grub_cfg} <<EOF
-menuentry "RancherOS-rollback" {
-  set root=(hd0,msdos1)
-  linux /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros ${append_line} console=${CONSOLE}
-  initrd /boot/initrd-${ROLLBACK_VERSION}-rancheros
-}
+    sed -i 's/^#set/set/' ${extlinux_conf}
+cat >>${extlinux_conf} <<EOF
+label ros-fallback
+    kernel /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros
+    initrd /boot/initrd-${ROLLBACK_VERSION}-rancheros
+    append ${append_line} console=${CONSOLE}
+
 EOF
 fi
 
@@ -147,14 +145,14 @@ if [ -n ${ENV} ]; then
     case ${ENV} in
         "generic")
             format_and_mount
-            install_grub
+            install_extlinux
             /scripts/seed-data ${BASE_DIR} ${CLOUD_CONFIG} ${FILES}
             ;;
         "amazon-ebs-pv"|"amazon-ebs-hvm")
             CONSOLE=ttyS0
             format_and_mount
             if [ "${ENV}" == "amazon-ebs-hvm" ]; then
-                install_grub
+                install_extlinux
             fi
             # AWS Networking recommends disabling.
             /scripts/seed-data ${BASE_DIR} ${CLOUD_CONFIG} ${FILES}
@@ -162,7 +160,7 @@ if [ -n ${ENV} ]; then
         "googlecompute")
             CONSOLE=ttyS0
             format_and_mount
-            install_grub
+            install_extlinux
             /scripts/seed-data ${BASE_DIR} ${CLOUD_CONFIG} ${FILES}
             ;;
         "bootstrap")
@@ -182,6 +180,6 @@ if [ -n ${ENV} ]; then
     esac
 fi
 
-grub2_config "${KERNEL_ARGS}"
+extlinux_config "${KERNEL_ARGS}"
 pvgrub_config "${KERNEL_ARGS}"
 install_rancher
