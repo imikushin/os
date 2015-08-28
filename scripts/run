@@ -108,6 +108,7 @@ if [ "$UNAME" == "Darwin" ] && [ -x $(which xhyve) ]; then
     # PREREQ: brew install cdrtools
     mkisofs -R -V config-2 -o "${CLOUD_CONFIG_ISO}" "$(pwd)/cloud-init"
 
+    KERNEL_ARGS="rancher.state.formatzero=true rancher.state.autoformat=[/dev/sda,/dev/vda] ${KERNEL_ARGS}"
     echo PWD=`pwd`
     exec sudo xhyve -A -H -P -u \
         -m 4G \
@@ -117,7 +118,7 @@ if [ "$UNAME" == "Darwin" ] && [ -x $(which xhyve) ]; then
         -s 3,ahci-cd,${CLOUD_CONFIG_ISO} \
         -s 4,virtio-blk,${HD} \
         -U a01fb25c-3a19-4759-a47a-2e353e51807d \
-        -f kexec,${KERNEL},${INITRD_TEST},"earlyprintk=serial elevator=noop rancher.state.formatzero=true rancher.state.autoformat=[/dev/sda,/dev/vda] ${KERNEL_ARGS}"
+        -f kexec,${KERNEL},${INITRD_TEST},"earlyprintk=serial elevator=noop ${KERNEL_ARGS}"
 
 elif [ "$UNAME" == "Linux" ] && [ -x $(which qemu-system-x86_64) ]; then
     exec qemu-system-x86_64 -serial stdio \

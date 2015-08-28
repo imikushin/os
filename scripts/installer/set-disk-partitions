@@ -30,7 +30,6 @@ if [ "$PARTITION_COUNT" -gt "1" ]; then
     done
 
     dd if=/dev/zero of=${DEVICE} bs=512 count=1
-    partprobe ${DEVICE}
 fi
 
 fdisk ${DEVICE} <<EOF
@@ -39,5 +38,7 @@ p
 1
 
 
+a
+1
 w
 EOF

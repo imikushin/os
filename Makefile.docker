@@ -49,7 +49,7 @@ $(DIST)/artifacts/iso-checksums.txt: $(DIST)/artifacts/rancheros.iso
 version:
 	@echo $(VERSION)
 
-installer: $(DIST)/artifacts/initrd $(DIST)/artifacts/vmlinuz
+installer:
 	docker build -t rancher/os:$(VERSION) .
 
 build-all: \

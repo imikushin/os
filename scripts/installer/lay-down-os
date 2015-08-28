@@ -19,7 +19,15 @@ do
     esac
 done
 
-DIST=${DIST:-/dist}
+mount_iso()
+{
+    mkdir -p /dist
+    mount -t iso9660 /dev/cdrom /dist || ( echo "ERROR: could not mount /dev/cdrom" && exit 1 )
+    trap "umount /dist" EXIT
+    ls /dist/boot/initrd >/dev/null 2>&1 || ( echo "ERROR: could not find initrd" && exit 1 )
+}
+
+DIST=${DIST:-$(mount_iso; echo /dist/boot)}
 CLOUD_CONFIG=${CLOUD_CONFIG:-/scripts/conf/empty.yml}
 CONSOLE=tty0
 BASE_DIR="/mnt/new_img"
@@ -43,22 +51,7 @@ format_device()
 
 mount_device() 
 {
-    local label=RANCHER_STATE
-    local raw="${1:-false}"
-
-    mkdir -p ${BASE_DIR}
-
-    if [ "$(lsblk -o name|grep RANCHER_BOOT | wc -l)" -eq "1" ]; then
-        label=RANCHER_BOOT
-    fi
-    
-    local mount_opts="-L ${label}"
-    if [ "${raw}" == "true" ]; then
-        device_defined ${DEVICE}
-        mount_opts=${PARTITION}
-    fi
-
-    mount ${mount_opts} ${BASE_DIR}
+    mount ${PARTITION} ${BASE_DIR}
     trap "umount ${BASE_DIR}" EXIT
 }
 
@@ -68,7 +61,7 @@ create_boot_dirs()
 }
 
 install_grub() {
-    grub-install --boot-directory=${BASE_DIR}/boot ${DEVICE}
+    cat /usr/share/grub/grub.img > ${DEVICE}
 }
 
 grub2_config(){

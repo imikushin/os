@@ -103,15 +103,15 @@ func runInstall(cfg *config.CloudConfig, image, installType, cloudConfig, device
 	}
 
 	if installType == "generic" {
-		cmd := exec.Command("system-docker", "run", "--net=host", "--privileged", "--volumes-from=all-volumes",
-			"--entrypoint=/scripts/set-disk-partitions", image, device)
+		cmd := exec.Command("system-docker", "run", "--privileged", "--volumes-from=all-volumes", image,
+			"/scripts/set-disk-partitions", device)
 		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 		if err := cmd.Run(); err != nil {
 			return err
 		}
 	}
-	cmd := exec.Command("system-docker", "run", "--net=host", "--privileged", "--volumes-from=user-volumes", image,
-		"-d", device, "-t", installType, "-c", cloudConfig)
+	cmd := exec.Command("system-docker", "run", "--privileged", "--volumes-from=user-volumes", image,
+		"/scripts/lay-down-os", "-d", device, "-t", installType, "-c", cloudConfig)
 	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 	if err := cmd.Run(); err != nil {
 		return err
