@@ -61,7 +61,10 @@ create_boot_dirs()
 }
 
 install_grub() {
-    cat /usr/share/grub/grub.img > ${DEVICE}
+    cp /usr/share/grub/grub.img /boot/grub/
+    cp -r /usr/share/syslinux/boot/extlinux /boot/
+    cp /scripts/conf/extlinux.conf /boot/extlinux/
+    dd if=/usr/share/syslinux/mbr.bin of=${DEVICE}
 }
 
 grub2_config(){

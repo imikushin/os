@@ -1,7 +1,7 @@
 FROM debian:jessie
 RUN apt-get update && \
     apt-get -y dist-upgrade && \
-    apt-get -y install locales sudo vim less curl wget git rsync build-essential syslinux isolinux xorriso \
+    apt-get -y install locales sudo vim less curl wget git rsync build-essential syslinux extlinux isolinux xorriso \
         libblkid-dev libmount-dev libselinux1-dev
 RUN locale-gen en_US.UTF-8
 RUN curl -sSL https://get.docker.com/ | sh
@@ -23,5 +23,8 @@ ENV GOPATH /go
 ENV PATH /go/bin:$PATH
 
 RUN go get github.com/tools/godep
+
+RUN mkdir -p /boot/extlinux
+RUN extlinux -i /boot/extlinux
 
 WORKDIR /go/src/github.com/rancherio/os
