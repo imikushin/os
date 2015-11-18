@@ -14,6 +14,7 @@ cp assets/docker           ${INITRD_DIR}/usr/bin/docker
 cp ${BUILD}/images.tar     ${INITRD_DIR}/usr/share/ros
 cp os-config.yml           ${INITRD_DIR}/usr/share/ros/
 cp bin/rancheros           ${INITRD_DIR}/usr/bin/ros
+ln -s ros                  ${INITRD_DIR}/usr/bin/dockerlaunch
 ln -s usr/bin/ros          ${INITRD_DIR}/init
 ln -s bin                  ${INITRD_DIR}/usr/sbin
 
