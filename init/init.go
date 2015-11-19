@@ -121,7 +121,17 @@ func tryMountAndBootstrap(cfg *config.CloudConfig) (*config.CloudConfig, error) 
 	return cfg, switchRoot(STATE, cfg.Rancher.RmUsr)
 }
 
-func getLaunchArgs(cfg *config.CloudConfig, dockerCfg *config.DockerConfig, cgroupHierarchy map[string]string) []string {
+func getCgroupArgs(cgroupHierarchy map[string]string) []string {
+	args := []string{}
+
+	for k, v := range cgroupHierarchy {
+		args = append(args, "--dfs-cgroup="+k+":"+v)
+	}
+
+	return args
+}
+
+func getLaunchArgs(cfg *config.CloudConfig, dockerCfg *config.DockerConfig) []string {
 
 	args := []string{config.DOCKER_BIN}
 
@@ -135,10 +145,6 @@ func getLaunchArgs(cfg *config.CloudConfig, dockerCfg *config.DockerConfig, cgro
 
 	if !cfg.Rancher.Debug {
 		args = append(args, "--dfs-logfile="+config.SYSTEM_DOCKER_LOG)
-	}
-
-	for k, v := range cgroupHierarchy {
-		args = append(args, "--dfs-cgroup="+k+":"+v)
 	}
 
 	args = append(args, dockerCfg.Args...)
@@ -179,18 +185,25 @@ func RunInit() error {
 		sysInit,
 	}
 
-	cfg, err := config.ChainCfgFuncs(nil, initFuncs...)
-	if err != nil {
-		return err
-	}
-
 	cgroupHierarchy := map[string]string{
 		"cpu":      "cpu",
 		"cpuacct":  "cpu",
 		"net_cls":  "net_cls",
 		"net_prio": "net_cls",
 	}
-	args := getLaunchArgs(cfg, &cfg.Rancher.SystemDocker, cgroupHierarchy)
+	cmd := exec.Command("/usr/bin/true", getCgroupArgs(cgroupHierarchy)...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	cfg, err := config.ChainCfgFuncs(nil, initFuncs...)
+	if err != nil {
+		return err
+	}
+
+	args := getLaunchArgs(cfg, &cfg.Rancher.SystemDocker)
 	log.Info("Launching System Docker")
 	return syscall.Exec(config.DOCKERLAUNCH_BIN, args, cfg.Rancher.SystemDocker.Environment)
 }

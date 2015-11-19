@@ -308,6 +308,7 @@ func ParseConfig(config *Config, args ...string) []string {
 			skip = false
 			continue
 		}
+		log.Info(arg)
 
 		switch {
 		case strings.HasPrefix(arg, "--bip"):

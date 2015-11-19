@@ -36,7 +36,7 @@ func runBootstrapContainers(cfg *config.CloudConfig) (*config.CloudConfig, error
 
 func startDocker(cfg *config.CloudConfig) (chan interface{}, error) {
 
-	args := getLaunchArgs(cfg, &cfg.Rancher.BootstrapDocker, nil)
+	args := getLaunchArgs(cfg, &cfg.Rancher.BootstrapDocker)
 
 	cmd := exec.Command(config.DOCKERLAUNCH_BIN, args...)
 	cmd.Env = cfg.Rancher.BootstrapDocker.Environment
