@@ -298,44 +298,61 @@ func setupNetworking(config *Config) error {
 }
 
 func ParseConfig(config *Config, args ...string) []string {
+	if config.CgroupHierarchy == nil {
+		config.CgroupHierarchy = map[string]string{}
+	}
+	newArgs := []string{}
+	skip := false
 	for i, arg := range args {
-		if strings.HasPrefix(arg, "--bip") {
-			config.BridgeAddress = util.GetValue(i, args)
-		} else if strings.HasPrefix(arg, "--fixed-cidr") {
-			config.BridgeAddress = util.GetValue(i, args)
-		} else if strings.HasPrefix(arg, "-b") || strings.HasPrefix(arg, "--bridge") {
-			config.BridgeName = util.GetValue(i, args)
-		} else if strings.HasPrefix(arg, "--mtu") {
-			mtu, err := strconv.Atoi(util.GetValue(i, args))
-			if err != nil {
+		if skip {
+			skip = false
+			continue
+		}
+
+		switch {
+		case strings.HasPrefix(arg, "--bip"):
+			config.BridgeAddress, skip = util.GetValue(i, args)
+			continue
+		case strings.HasPrefix(arg, "--fixed-cidr"):
+			config.BridgeAddress, _ = util.GetValue(i, args)
+		case strings.HasPrefix(arg, "-b") || strings.HasPrefix(arg, "--bridge"):
+			config.BridgeName, _ = util.GetValue(i, args)
+		case strings.HasPrefix(arg, "--mtu"):
+			mtuStr, _ := util.GetValue(i, args)
+			if mtu, err := strconv.Atoi(mtuStr); err != nil {
 				config.BridgeMtu = mtu
 			}
+		case strings.HasPrefix(arg, "--dfs-dns-nameservers"):
+			var v string
+			v, skip = util.GetValue(i, args)
+			config.DnsConfig.Nameservers = strings.Split(v, ",")
+			continue
+		case strings.HasPrefix(arg, "--dfs-dns-search"):
+			var v string
+			v, skip = util.GetValue(i, args)
+			config.DnsConfig.Search = strings.Split(v, ",")
+			continue
+		case strings.HasPrefix(arg, "--dfs-cgroup"):
+			var v string
+			v, skip = util.GetValue(i, args)
+			cgroup := strings.Split(v, ":")
+			if len(cgroup) == 2 {
+				config.CgroupHierarchy[cgroup[0]] = cgroup[1]
+			}
+			continue
+		case strings.HasPrefix(arg, "--dfs-logfile"):
+			config.LogFile, skip = util.GetValue(i, args)
+			continue
+		case arg == "--dfs-emulate-systemd":
+			skip = true
+			config.EmulateSystemd = true
+			continue
 		}
+
+		newArgs = append(newArgs, arg)
 	}
 
-	if config.BridgeName != "" && config.BridgeAddress != "" {
-		newArgs := []string{}
-		skip := false
-		for _, arg := range args {
-			if skip {
-				skip = false
-				continue
-			}
-
-			if arg == "--bip" {
-				skip = true
-				continue
-			} else if strings.HasPrefix(arg, "--bip=") {
-				continue
-			}
-
-			newArgs = append(newArgs, arg)
-		}
-
-		args = newArgs
-	}
-
-	return args
+	return newArgs
 }
 
 func PrepareFs(config *Config) error {

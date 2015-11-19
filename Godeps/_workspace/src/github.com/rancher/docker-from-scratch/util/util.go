@@ -4,16 +4,16 @@ import (
 	"strings"
 )
 
-func GetValue(index int, args []string) string {
+func GetValue(index int, args []string) (string, bool) {
 	val := args[index]
 	parts := strings.SplitN(val, "=", 2)
 	if len(parts) == 1 {
 		if len(args) > index+1 {
-			return args[index+1]
+			return args[index+1], true
 		} else {
-			return ""
+			return "", false
 		}
 	} else {
-		return parts[1]
+		return parts[1], false
 	}
 }
