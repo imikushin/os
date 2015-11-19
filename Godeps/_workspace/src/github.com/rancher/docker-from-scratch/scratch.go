@@ -383,7 +383,7 @@ func touchSockets(args ...string) error {
 
 	for i, arg := range args {
 		if strings.HasPrefix(arg, "-H") {
-			val := util.GetValue(i, args)
+			val, _ := util.GetValue(i, args)
 			if strings.HasPrefix(val, "unix://") {
 				val = val[len("unix://"):]
 				log.Debugf("Creating temp file at %s", val)

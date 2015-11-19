@@ -125,10 +125,10 @@ func getLaunchArgs(cfg *config.CloudConfig, dockerCfg *config.DockerConfig, cgro
 
 	args := []string{config.DOCKER_BIN}
 
-	if len(cfg.Rancher.Network.Dns.Nameservers) {
+	if len(cfg.Rancher.Network.Dns.Nameservers) > 0 {
 		args = append(args, "--dfs-dns-nameservers="+strings.Join(cfg.Rancher.Network.Dns.Nameservers, ","))
 	}
-	if len(cfg.Rancher.Network.Dns.Nameservers) {
+	if len(cfg.Rancher.Network.Dns.Search) > 0 {
 		args = append(args, "--dfs-dns-search="+strings.Join(cfg.Rancher.Network.Dns.Search, ","))
 	}
 	args = append(args, "--dfs-emulate-systemd")

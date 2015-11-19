@@ -38,8 +38,8 @@ func startDocker(cfg *config.CloudConfig) (chan interface{}, error) {
 
 	args := getLaunchArgs(cfg, &cfg.Rancher.BootstrapDocker, nil)
 
-	cmd := exec.Command(config.DOCKERLAUNCH_BIN, args)
-	cmd.Env = &cfg.Rancher.BootstrapDocker.Environment
+	cmd := exec.Command(config.DOCKERLAUNCH_BIN, args...)
+	cmd.Env = cfg.Rancher.BootstrapDocker.Environment
 
 	if err := cmd.Start(); err != nil {
 		return nil, err
