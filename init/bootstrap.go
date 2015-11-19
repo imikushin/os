@@ -2,6 +2,7 @@ package init
 
 import (
 	"os"
+	"os/exec"
 	"syscall"
 
 	"fmt"
@@ -9,7 +10,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/libcompose/project"
-	"github.com/rancher/docker-from-scratch"
 	"github.com/rancher/os/compose"
 	"github.com/rancher/os/config"
 	"github.com/rancher/os/util"
@@ -36,13 +36,12 @@ func runBootstrapContainers(cfg *config.CloudConfig) (*config.CloudConfig, error
 
 func startDocker(cfg *config.CloudConfig) (chan interface{}, error) {
 
-	launchConfig, args := getLaunchConfig(cfg, &cfg.Rancher.BootstrapDocker)
-	launchConfig.Fork = true
-	launchConfig.LogFile = ""
-	launchConfig.NoLog = true
+	args := getLaunchArgs(cfg, &cfg.Rancher.BootstrapDocker, nil)
 
-	cmd, err := dockerlaunch.LaunchDocker(launchConfig, config.DOCKER_BIN, args...)
-	if err != nil {
+	cmd := exec.Command(config.DOCKERLAUNCH_BIN, args)
+	cmd.Env = &cfg.Rancher.BootstrapDocker.Environment
+
+	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
 

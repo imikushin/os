@@ -9,9 +9,19 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/archive"
-	"github.com/rancher/docker-from-scratch"
 	"github.com/rancher/os/config"
 )
+
+func createSymlink(src, dest string) error {
+	if _, err := os.Lstat(dest); os.IsNotExist(err) {
+		log.Debugf("Symlinking %s => %s", dest, src)
+		if err = os.Symlink(src, dest); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func cleanupTarget(rootfs, targetUsr, usr, usrVer, tmpDir string) (bool, error) {
 	log.Debugf("Deleting %s", targetUsr)
@@ -20,7 +30,7 @@ func cleanupTarget(rootfs, targetUsr, usr, usrVer, tmpDir string) (bool, error) 
 		return false, err
 	}
 
-	if err := dockerlaunch.CreateSymlink(usrVer, path.Join(rootfs, "usr")); err != nil {
+	if err := createSymlink(usrVer, path.Join(rootfs, "usr")); err != nil {
 		return false, err
 	}
 

@@ -8,26 +8,15 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/rancher/docker-from-scratch"
 	"github.com/rancher/os/config"
 	"github.com/rancher/os/util"
 )
 
 const (
 	STATE string = "/state"
-)
-
-var (
-	mountConfig = dockerlaunch.Config{
-		CgroupHierarchy: map[string]string{
-			"cpu":      "cpu",
-			"cpuacct":  "cpu",
-			"net_cls":  "net_cls",
-			"net_prio": "net_cls",
-		},
-	}
 )
 
 func loadModules(cfg *config.CloudConfig) (*config.CloudConfig, error) {
@@ -132,21 +121,30 @@ func tryMountAndBootstrap(cfg *config.CloudConfig) (*config.CloudConfig, error) 
 	return cfg, switchRoot(STATE, cfg.Rancher.RmUsr)
 }
 
-func getLaunchConfig(cfg *config.CloudConfig, dockerCfg *config.DockerConfig) (*dockerlaunch.Config, []string) {
-	var launchConfig dockerlaunch.Config
+func getLaunchArgs(cfg *config.CloudConfig, dockerCfg *config.DockerConfig, cgroupHierarchy map[string]string) []string {
 
-	args := dockerlaunch.ParseConfig(&launchConfig, append(dockerCfg.Args, dockerCfg.ExtraArgs...)...)
+	args := []string{config.DOCKER_BIN}
 
-	launchConfig.DnsConfig.Nameservers = cfg.Rancher.Network.Dns.Nameservers
-	launchConfig.DnsConfig.Search = cfg.Rancher.Network.Dns.Search
-	launchConfig.Environment = dockerCfg.Environment
-	launchConfig.EmulateSystemd = true
+	if len(cfg.Rancher.Network.Dns.Nameservers) {
+		args = append(args, "--dfs-dns-nameservers="+strings.Join(cfg.Rancher.Network.Dns.Nameservers, ","))
+	}
+	if len(cfg.Rancher.Network.Dns.Nameservers) {
+		args = append(args, "--dfs-dns-search="+strings.Join(cfg.Rancher.Network.Dns.Search, ","))
+	}
+	args = append(args, "--dfs-emulate-systemd")
 
 	if !cfg.Rancher.Debug {
-		launchConfig.LogFile = config.SYSTEM_DOCKER_LOG
+		args = append(args, "--dfs-logfile="+config.SYSTEM_DOCKER_LOG)
 	}
 
-	return &launchConfig, args
+	for k, v := range cgroupHierarchy {
+		args = append(args, "--dfs-cgroup="+k+":"+v)
+	}
+
+	args = append(args, dockerCfg.Args...)
+	args = append(args, dockerCfg.ExtraArgs...)
+
+	return args
 }
 
 func RunInit() error {
@@ -155,9 +153,6 @@ func RunInit() error {
 	os.Setenv("DOCKER_RAMDISK", "true")
 
 	initFuncs := []config.CfgFunc{
-		func(c *config.CloudConfig) (*config.CloudConfig, error) {
-			return c, dockerlaunch.PrepareFs(&mountConfig)
-		},
 		func(_ *config.CloudConfig) (*config.CloudConfig, error) {
 			cfg, err := config.LoadConfig()
 			if err != nil {
@@ -189,9 +184,13 @@ func RunInit() error {
 		return err
 	}
 
-	launchConfig, args := getLaunchConfig(cfg, &cfg.Rancher.SystemDocker)
-
+	cgroupHierarchy := map[string]string{
+		"cpu":      "cpu",
+		"cpuacct":  "cpu",
+		"net_cls":  "net_cls",
+		"net_prio": "net_cls",
+	}
+	args := getLaunchArgs(cfg, &cfg.Rancher.SystemDocker, cgroupHierarchy)
 	log.Info("Launching System Docker")
-	_, err = dockerlaunch.LaunchDocker(launchConfig, config.DOCKER_BIN, args...)
-	return err
+	return syscall.Exec(config.DOCKERLAUNCH_BIN, args, cfg.Rancher.SystemDocker.Environment)
 }
