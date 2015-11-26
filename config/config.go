@@ -3,7 +3,7 @@ package config
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/rancher/os/util"
-	"gopkg.in/yaml.v2"
+	yaml "github.com/cloudfoundry-incubator/candiedyaml"
 )
 
 func (c *CloudConfig) Import(bytes []byte) (*CloudConfig, error) {
