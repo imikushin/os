@@ -6,7 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"google.golang.org/cloud/compute/metadata"
-	"gopkg.in/yaml.v2"
+	yaml "github.com/cloudfoundry-incubator/candiedyaml"
 )
 
 type GceCloudConfig struct {
