@@ -150,7 +150,8 @@ import:
   - util
 
 - package: github.com/rancher/netconf
-  version: 23842884e1aaf10ad86e9fb13ed9238eebd173b6
+  version: a2add2db148d4d3f45fe1ace5e37cf17e24d2705
+  repo:    https://github.com/imikushin/netconf.git
 
 - package: github.com/ryanuber/go-glob
   version: 0067a9abd927e50aed5190662702f81231413ae0
