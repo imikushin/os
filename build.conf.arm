@@ -1,0 +1,2 @@
+COMPILED_KERNEL_URL=https://github.com/rancher/os-kernel/releases/download/HypriotOS-4.1.12-v7+/linux-4.1.12-hypriotos-v7.-arm.tar.gz
+DFS_IMAGE=rancher/docker:1.10.0-rc1_arm

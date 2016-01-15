@@ -1,25 +1,27 @@
-include build.conf
 FORCE_PULL := 0
 DEV_BUILD  := 0
+ARCH       := amd64
+
+include build.conf
+include build.conf.$(ARCH)
 
 
 installer: minimal
 	docker build -t $(IMAGE_NAME):$(VERSION) .
 
-bin/rancheros:
+bin/ros:
 	mkdir -p $(dir $@)
-	go build -tags netgo -installsuffix netgo -ldflags "-X github.com/rancher/os/config.VERSION=$(VERSION) -linkmode external -extldflags -static" -o $@
-	strip --strip-all $@
+	ARCH=$(ARCH) VERSION=$(VERSION) ./scripts/mk-ros.sh $@
 
+./ros: bin/ros
+ifeq "$(ARCH)" "amd64"
+	ln -sf bin/ros ./ros
+else
+	ARCH=amd64 VERSION=$(VERSION) ./scripts/mk-ros.sh $@
+endif
 
 pwd := $(shell pwd)
 include scripts/build-common
-
-
-assets/docker:
-	mkdir -p $(dir $@)
-	curl -L "$(DOCKER_BINARY_URL)" > $@
-	chmod +x $@
 
 
 $(DIST)/artifacts/vmlinuz: $(BUILD)/kernel/
@@ -32,11 +34,11 @@ $(BUILD)/kernel/:
 	([ -e "$(COMPILED_KERNEL_URL)" ] && cat "$(COMPILED_KERNEL_URL)" || curl -L "$(COMPILED_KERNEL_URL)") | tar -xzf - -C $@
 
 
-$(BUILD)/images.tar: bin/rancheros
-	FORCE_PULL=$(FORCE_PULL) ./scripts/mk-images-tar.sh
+$(BUILD)/images.tar: ./ros
+	ARCH=$(ARCH) FORCE_PULL=$(FORCE_PULL) ./scripts/mk-images-tar.sh
 
 
-$(DIST)/artifacts/initrd: bin/rancheros assets/docker $(BUILD)/kernel/ $(BUILD)/images.tar
+$(DIST)/artifacts/initrd: bin/ros $(BUILD)/kernel/ $(BUILD)/images.tar
 	mkdir -p $(dir $@)
 	DFS_IMAGE=$(DFS_IMAGE) DEV_BUILD=$(DEV_BUILD) ./scripts/mk-initrd.sh
 
@@ -54,11 +56,13 @@ version:
 
 all: minimal installer iso
 
-minimal: $(DIST)/artifacts/initrd $(DIST)/artifacts/vmlinuz
+initrd: $(DIST)/artifacts/initrd
+
+minimal: initrd $(DIST)/artifacts/vmlinuz
 
 iso: $(DIST)/artifacts/rancheros.iso $(DIST)/artifacts/iso-checksums.txt
 
 test: minimal
 	cd tests/integration && tox
 
-.PHONY: build-all minimal iso installer version bin/rancheros integration-tests
+.PHONY: build-all minimal initrd iso installer version bin/ros integration-tests
