@@ -1,3 +1,4 @@
+hostname: rancher
 rancher:
   bootstrap:
     state-script:
