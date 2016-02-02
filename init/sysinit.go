@@ -96,7 +96,6 @@ func SysInit() error {
 	}
 
 	_, err = config.ChainCfgFuncs(cfg,
-		loadImages,
 		func(cfg *config.CloudConfig) (*config.CloudConfig, error) {
 			p, err := compose.GetProject(cfg, false)
 			if err != nil {

@@ -120,6 +120,12 @@ func switchRoot(rootfs, subdir string, rmUsr bool) error {
 		}
 	}
 
+	log.Debug("About to copy /var/lib/system-docker")
+	if _, err := os.Stat(path.Join(rootfs, "/var/lib/system-docker")); os.IsNotExist(err) {
+		err := archive.CopyWithTar("/var/lib/system-docker", path.Join(rootfs, "/var/lib/system-docker"))
+		log.Debugf("Copied /var/lib/system-docker, err == '%v'", err)
+	}
+
 	for _, i := range []string{"/dev", "/sys", "/proc", "/run"} {
 		log.Debugf("Moving mount %s to %s", i, path.Join(rootfs, i))
 		if err := os.MkdirAll(path.Join(rootfs, i), 0755); err != nil {

@@ -1,7 +1,6 @@
 package init
 
 import (
-	"os"
 	"syscall"
 
 	"fmt"
@@ -61,7 +60,7 @@ func stopDocker(c chan interface{}) error {
 	c <- struct{}{}
 	<-c
 
-	return os.RemoveAll(config.DOCKER_SYSTEM_HOME)
+	return nil
 }
 
 func bootstrap(cfg *config.CloudConfig) error {
@@ -74,7 +73,6 @@ func bootstrap(cfg *config.CloudConfig) error {
 	defer stopDocker(c)
 
 	_, err = config.ChainCfgFuncs(cfg,
-		loadImages,
 		runBootstrapContainers,
 		autoformat)
 	return err

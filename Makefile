@@ -34,13 +34,9 @@ $(BUILD)/kernel/:
 	([ -e "$(COMPILED_KERNEL_URL)" ] && cat "$(COMPILED_KERNEL_URL)" || curl -L "$(COMPILED_KERNEL_URL)") | tar -xzf - -C $@
 
 
-$(BUILD)/images.tar: ./ros
-	ARCH=$(ARCH) FORCE_PULL=$(FORCE_PULL) ./scripts/mk-images-tar.sh
-
-
-$(DIST)/artifacts/initrd: bin/ros $(BUILD)/kernel/ $(BUILD)/images.tar
+$(DIST)/artifacts/initrd: ./ros bin/ros $(BUILD)/kernel/
 	mkdir -p $(dir $@)
-	DFS_IMAGE=$(DFS_IMAGE) DEV_BUILD=$(DEV_BUILD) ./scripts/mk-initrd.sh
+	DFS_IMAGE=$(DFS_IMAGE) FORCE_PULL=$(FORCE_PULL) DEV_BUILD=$(DEV_BUILD) ./scripts/mk-initrd.sh
 
 
 $(DIST)/artifacts/rancheros.iso: minimal
