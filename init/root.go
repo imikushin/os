@@ -12,6 +12,7 @@ import (
 	"github.com/docker/docker/pkg/archive"
 	"github.com/rancher/docker-from-scratch"
 	"github.com/rancher/os/config"
+	"github.com/rancher/os/util"
 )
 
 func cleanupTarget(rootfs, targetUsr, usr, usrVer, tmpDir string) (bool, error) {
@@ -122,8 +123,9 @@ func switchRoot(rootfs, subdir string, rmUsr bool) error {
 
 	log.Debug("About to copy /var/lib/system-docker")
 	if _, err := os.Stat(path.Join(rootfs, "/var/lib/system-docker")); os.IsNotExist(err) {
-		err := archive.CopyWithTar("/var/lib/system-docker", path.Join(rootfs, "/var/lib/system-docker"))
-		log.Debugf("Copied /var/lib/system-docker, err == '%v'", err)
+		if err := util.CopyDirWithTar("/var/lib/system-docker", path.Join(rootfs, "/var/lib/system-docker")); err != nil {
+			log.Errorf("Failed to create %s, err == '%v'", path.Join(rootfs, "/var/lib/system-docker"), err)
+		}
 	}
 
 	for _, i := range []string{"/dev", "/sys", "/proc", "/run"} {

@@ -1,12 +1,14 @@
 package util
 
 import (
+	"archive/tar"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	yaml "github.com/cloudfoundry-incubator/candiedyaml"
@@ -56,6 +58,102 @@ func FileCopy(src, dest string) (err error) {
 		return err
 	}
 	return
+}
+
+func streamTar(src string) io.ReadCloser {
+	in, out := io.Pipe()
+	tarWriter := tar.NewWriter(out)
+	go func() {
+		filepath.Walk(src, func(path string, fileInfo os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			header, err := tar.FileInfoHeader(fileInfo, fileInfo.Name())
+			if err != nil {
+				log.Errorf("Failed to create a Tar Header: '%s'", err)
+				return err
+			}
+			header.Name = filepath.Join(".", strings.TrimPrefix(path, src))
+			log.Warnf("Tar: writing header: '%s'", header.Name)
+			if err := tarWriter.WriteHeader(header); err != nil {
+				log.Errorf("Failed to write a Tar Header: '%s'", err)
+				return err
+			}
+			if fileInfo.Mode().IsRegular() {
+				file, err := os.Open(path)
+				if err != nil {
+					log.Errorf("Failed to open file '%s': '%s'", path, err)
+					return err
+				}
+				defer file.Close()
+				log.Infof("Tar: copying file '%s'", path)
+				if _, err := io.Copy(tarWriter, file); err != nil {
+					log.Errorf("Failed to copy write file content to tar: '%s'", err)
+					return err
+				}
+				return err
+			}
+			return nil
+		})
+		tarWriter.Close()
+	}()
+	return in
+}
+
+func untarStream(in io.Reader, dest string) error {
+	tarReader := tar.NewReader(in)
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+		path := filepath.Join(dest, header.Name)
+		info := header.FileInfo()
+		if info.IsDir() {
+			log.Warnf("Untar: dir '%s'", path)
+			if err = os.MkdirAll(path, info.Mode()); err != nil {
+				return err
+			}
+		} else if info.Sys().(*tar.Header).Typeflag == tar.TypeLink {
+			log.Warnf("Untar: hardlinking '%s' to '%s'", filepath.Join(dest, header.Linkname), path)
+			if err := os.Link(filepath.Join(dest, header.Linkname), path); err != nil {
+				log.Errorf("Untar: screwed at hardlinking '%s' to '%s'", filepath.Join(dest, header.Linkname), path)
+				return err
+			}
+		} else if info.Mode().IsRegular() {
+			log.Warnf("Untar: file '%s'", path)
+			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+			_, err =io.Copy(file, tarReader)
+			file.Close()
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func CopyDirWithTar(src, dest string) error {
+	if err := os.MkdirAll(dest, 0755); err != nil {
+		log.Errorf("Failed to create %s, err == '%v'", dest, err)
+		return err
+	}
+	if srcInfo, err := os.Stat(src); !srcInfo.IsDir() || err != nil {
+		log.Errorf("Failed to stat dir: '%s'", src)
+	}
+	in := streamTar(src)
+	defer in.Close()
+	if err := untarStream(in, dest); err != nil {
+		log.Errorf("Failed to untar, err == %v", err)
+		return err
+	}
+	return nil
 }
 
 func Convert(from, to interface{}) error {
