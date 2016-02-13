@@ -33,9 +33,9 @@ ifdef COMPILED_KERNEL_URL
 installer: minimal
 	docker build -t $(IMAGE_NAME):$(VERSION) .
 
-$(DIST)/artifacts/vmlinuz: $(BUILD)/kernel/
+$(DIST)/artifacts/vmlinux: $(BUILD)/kernel/
 	mkdir -p $(dir $@)
-	mv $(BUILD)/kernel/boot/vmlinuz* $@
+	mv $(BUILD)/kernel/boot/vmlinux* $@
 
 
 $(BUILD)/kernel/:
@@ -55,7 +55,7 @@ all: minimal installer iso
 
 initrd: $(DIST)/artifacts/initrd
 
-minimal: initrd $(DIST)/artifacts/vmlinuz
+minimal: initrd $(DIST)/artifacts/vmlinux
 
 iso: $(DIST)/artifacts/rancheros.iso $(DIST)/artifacts/iso-checksums.txt
 

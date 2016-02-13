@@ -37,7 +37,7 @@ KVER=$(ls ./lib/modules)
 depmod -b . $KVER
 
 echo Creating ${OLDPWD}/kernel.tar.gz
-tar cvzf ${OLDPWD}/kernel.tar.gz ./lib boot/vmlinuz*
+tar cvzf ${OLDPWD}/kernel.tar.gz ./lib boot/vmlinux*
 echo Created ${OLDPWD}/kernel.tar.gz
 
 cd -

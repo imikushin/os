@@ -9,7 +9,7 @@ CD=${BUILD}/cd
 mkdir -p ${CD}/boot/isolinux
 
 cp ${DIST}/artifacts/initrd                   ${CD}/boot
-cp ${DIST}/artifacts/vmlinuz                  ${CD}/boot
+cp ${DIST}/artifacts/vmlinux                  ${CD}/boot
 cp scripts/isolinux.cfg                       ${CD}/boot/isolinux
 cp /usr/lib/ISOLINUX/isolinux.bin             ${CD}/boot/isolinux
 cp /usr/lib/syslinux/modules/bios/ldlinux.c32 ${CD}/boot/isolinux

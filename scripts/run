@@ -8,7 +8,7 @@ source scripts/build-common
 
 BASE=$(pwd)
 
-KERNEL=${BASE}/dist/artifacts/vmlinuz
+KERNEL=${BASE}/dist/artifacts/vmlinux
 INITRD=${BASE}/dist/artifacts/initrd
 
 QEMU=1

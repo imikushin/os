@@ -83,7 +83,7 @@ set timeout="1"
 
 menuentry "RancherOS-current" {
   set root=(hd0,msdos1)
-  linux /boot/vmlinuz-${VERSION}-rancheros ${append_line} console=${CONSOLE}
+  linux /boot/vmlinux-${VERSION}-rancheros ${append_line} console=${CONSOLE}
   initrd /boot/initrd-${VERSION}-rancheros
 }
 
@@ -94,7 +94,7 @@ if [ ! -z ${ROLLBACK_VERSION} ]; then
 cat >>${grub_cfg} <<EOF
 menuentry "RancherOS-rollback" {
   set root=(hd0,msdos1)
-  linux /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros ${append_line} console=${CONSOLE}
+  linux /boot/vmlinux-${ROLLBACK_VERSION}-rancheros ${append_line} console=${CONSOLE}
   initrd /boot/initrd-${ROLLBACK_VERSION}-rancheros
 }
 EOF
@@ -105,7 +105,7 @@ fi
 install_rancher()
 {
     cp ${DIST}/initrd ${BASE_DIR}/boot/initrd-${VERSION}-rancheros
-    cp ${DIST}/vmlinuz ${BASE_DIR}/boot/vmlinuz-${VERSION}-rancheros
+    cp ${DIST}/vmlinux ${BASE_DIR}/boot/vmlinux-${VERSION}-rancheros
 }
 
 pvgrub_config()
@@ -121,7 +121,7 @@ hiddenmenu
 
 title RancherOS ${VERSION}-(current)
 root (hd0)
-kernel /boot/vmlinuz-${VERSION}-rancheros ${append_line} console=${CONSOLE}
+kernel /boot/vmlinux-${VERSION}-rancheros ${append_line} console=${CONSOLE}
 initrd /boot/initrd-${VERSION}-rancheros
 
 EOF
@@ -131,7 +131,7 @@ if [ ! -z ${ROLLBACK_VERSION} ]; then
 cat >> ${grub_file}<<EOF
 title RancherOS ${ROLLBACK_VERSION}-(rollback)
 root (hd0)
-kernel /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros ${append_line} console=${CONSOLE}
+kernel /boot/vmlinux-${ROLLBACK_VERSION}-rancheros ${append_line} console=${CONSOLE}
 initrd /boot/initrd-${ROLLBACK_VERSION}-rancheros
 EOF
 fi
