@@ -1,0 +1,7 @@
+---
+available:
+  - {{env "OS_IMAGES_ROOT"}}/os:v0.4.0
+  - {{env "OS_IMAGES_ROOT"}}/os:v0.4.1
+  - {{env "OS_IMAGES_ROOT"}}/os:v0.4.2
+  - {{env "OS_IMAGES_ROOT"}}/os:v0.4.3
+current: {{env "OS_IMAGES_ROOT"}}/os:v0.4.3

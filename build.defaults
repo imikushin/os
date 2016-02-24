@@ -1,0 +1,4 @@
+HOSTNAME_DEFAULT=rancher
+OS_IMAGES_ROOT=rancher
+OS_SERVICES_REPO=https://raw.githubusercontent.com/rancher/os-services
+OS_RELEASES_YML=https://releases.rancher.com/os/releases.yml
