@@ -1,0 +1,7 @@
+---
+available:
+  - {{.OS_IMAGES_ROOT}}/os:v0.4.0
+  - {{.OS_IMAGES_ROOT}}/os:v0.4.1
+  - {{.OS_IMAGES_ROOT}}/os:v0.4.2
+  - {{.OS_IMAGES_ROOT}}/os:v0.4.3
+current: {{.OS_IMAGES_ROOT}}/os:v0.4.3
