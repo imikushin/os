@@ -39,12 +39,12 @@ func Main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	hostname, _ := cloudinit.SetHostname(cfg) // ignore error
+	hostname, _ := os.Hostname() // ignore error
 	log.Infof("Network: hostname: '%s'", hostname)
 	if err := netconf.ApplyNetworkConfigs(&cfg.Rancher.Network); err != nil {
 		log.Error(err)
 	}
-	hostname, _ = cloudinit.SetHostname(cfg) // ignore error
+	hostname, _ = os.Hostname() // ignore error
 	log.Infof("Network: hostname: '%s' (from DHCP, if not set by cloud-config)", hostname)
 	if hostname != "" {
 		hosts, err := os.Open("/etc/hosts")

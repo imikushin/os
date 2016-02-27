@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	defaultDhcpArgs = []string{"dhcpcd", "-MA4", "-e", "force_hostname=true"}
+	defaultDhcpArgs = []string{"dhcpcd", "-HA4"}
 )
 
 func createInterfaces(netCfg *NetworkConfig) {

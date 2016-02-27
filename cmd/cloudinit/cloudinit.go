@@ -171,7 +171,7 @@ func fetchUserData() ([]byte, datasource.Metadata, error) {
 
 func SetHostname(cc *rancherConfig.CloudConfig) (string, error) {
 	name, _ := os.Hostname()
-	if cc.Hostname != "" {
+	if name == "" && cc.Hostname != "" {
 		name = cc.Hostname
 	}
 	if name != "" {
