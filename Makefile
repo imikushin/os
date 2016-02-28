@@ -6,6 +6,9 @@ include build.conf
 include build.conf.$(ARCH)
 
 
+build/os-config.yml: build/host_ros
+	ARCH=$(ARCH) VERSION=$(VERSION) ./scripts/gen-os-config.sh $@
+
 bin/ros:
 	mkdir -p $(dir $@)
 	ARCH=$(ARCH) VERSION=$(VERSION) ./scripts/mk-ros.sh $@
@@ -68,10 +71,6 @@ test: minimal
 .PHONY: all minimal initrd iso installer test
 
 endif
-
-
-build/os-config.yml: build/host_ros
-	ARCH=$(ARCH) VERSION=$(VERSION) ./scripts/gen-os-config.sh $@
 
 
 $(BUILD)/images.tar: build/host_ros build/os-config.yml
