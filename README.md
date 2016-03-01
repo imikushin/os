@@ -1,5 +1,7 @@
 # RancherOS
 
+[![Join the chat at https://gitter.im/imikushin/os](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/imikushin/os?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The smallest, easiest way to run Docker in production at scale.  Everything in RancherOS is a container managed by Docker.  This includes system services such as udev and rsyslog.  RancherOS includes only the bare minimum amount of software needed to run Docker.  This keeps the binary download of RancherOS to about 25MB.  Everything else can be pulled in dynamically through Docker.
 
 ## How this works
