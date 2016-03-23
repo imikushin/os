@@ -27,6 +27,14 @@ hd_arm() {
 }
 declare -A hd=( ["amd64"]="hd_amd64" ["arm"]="hd_arm" ["arm64"]="hd_arm" )
 
+cd_amd64() {
+    echo "-cdrom $1"
+}
+cd_arm() {
+    echo "-drive if=none,file=$1,id=cd0,media=cdrom -device virtio-scsi-device -device scsi-cd,drive=cd0"
+}
+declare -A cd=( ["amd64"]="cd_amd64" ["arm"]="cd_arm" ["arm64"]="cd_arm" )
+
 BASE=$(pwd)
 UNAME=$(uname)
 
@@ -208,7 +216,7 @@ if [ "$XHYVE" == "1" ] || [ "$QEMU" == "1" ]; then
             ${network["$ARCH"]} \
             $(eval "${hd["$ARCH"]} ${HD}") \
             -smp 1 \
-            -cdrom ${CLOUD_CONFIG_ISO} \
+            $(eval "${cd["$ARCH"]} ${CLOUD_CONFIG_ISO}") \
             -append "${KERNEL_ARGS}" \
             -nographic \
             -display none \
