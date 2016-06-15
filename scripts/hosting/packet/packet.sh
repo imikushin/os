@@ -9,7 +9,7 @@ apt-get install -y jq curl
 
 mkdir -p /boot/ros
 
-URL_BASE=https://github.com/imikushin/os/releases/download/v0.4.5-fix-1
+URL_BASE=https://github.com/rancher/os/releases/download/v0.4.5-dev-1
 curl -L $URL_BASE/vmlinuz > /boot/ros/vmlinuz
 curl -L $URL_BASE/initrd > /boot/ros/initrd
 
